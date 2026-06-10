@@ -1,0 +1,13 @@
+{
+  "name": "Manyang Calendar",
+  "short_name": "manyang",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/1zN5hjmh/manyang2.png",
+      "sizes": "192x192",
+      "type": "image/jpg",
+      "purpose": "any maskable"
+    }
+  ],
+  "display": "standalone"
+}
