@@ -628,8 +628,6 @@ async function loadData() {
         await loadMemos();
         try { await loadUpItems(); } catch (e) { console.log("UP 컬렉션 로드 실패:", e); }
     } catch (error) { console.error("데이터 로드 오류:", error); }
-    const overlay = document.getElementById('loadingOverlay');
-    if(overlay) overlay.classList.add('hidden');
 }
 
 function resetImagePreviewUI(imgUrl) {
@@ -2258,8 +2256,6 @@ window.showTab = async function(tab) {
         renderCalendar();
     } catch (error) {
         console.error('일정 탭 렌더링 중 오류 발생:', error);
-    } finally {
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
     }
 }
 
@@ -2597,6 +2593,7 @@ document.addEventListener('dragstart', function(e) {
 });
 
 window.onload = async () => {
+    const loadingOverlay = document.getElementById('loadingOverlay');
     try {
         await seedAdmin();
         await loadData();
@@ -2604,14 +2601,17 @@ window.onload = async () => {
         updateAdminUI(); // <--- 이 코드가 있는지 확인하세요! 반드시 있어야 합니다.
         
         await window.showTab('schedule');
+        await window.checkAndShowPopup();
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
+    } finally {
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+        }
     }
 
     const btnMin = document.getElementById('btnMin');
     if(btnMin) btnMin.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
-    
-    window.checkAndShowPopup();
 
     const loginBtns = document.querySelectorAll('#adminBtn, #adminBtn_pc');
     loginBtns.forEach(btn => {
@@ -2628,11 +2628,6 @@ window.onload = async () => {
             renderCalendar();
         }
     });
-
-    setTimeout(() => {
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) { loadingOverlay.classList.add('hidden'); }
-    }, 1000);
 };
 
 window.addEventListener('unhandledrejection', (event) => {
