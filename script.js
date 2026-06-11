@@ -2573,59 +2573,43 @@ window.copyScheduleText = function() {
 };
 
 Object.assign(window, {
-    handleEventImgUpload, 
-    addMember, 
-    deleteMember,
-    openMemberManager, 
-    renderMemberList, 
-    showToast, 
-    closeModal, 
-    formatTime12h,
-    setAMPM, 
-    openAddModal, 
-    saveEvent, 
-    deleteEvent, 
-    showInfo,
-    openMemoInput, 
-    closeMemoInput, 
-    saveMemoItem, 
-    selectMemoTab
+    handleEventImgUpload, addMember, deleteMember, openMemberManager,
+    renderMemberList, showToast, closeModal, formatTime12h, setAMPM,
+    openAddModal, saveEvent, deleteEvent, showInfo, openMemoInput,
+    closeMemoInput, saveMemoItem, selectMemoTab
 });
 
 document.addEventListener('contextmenu', function(e) {
-    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-    }
+    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
 });
-
 document.addEventListener('selectstart', function(e) {
-    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-    }
+    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
 });
-
 document.addEventListener('dragstart', function(e) {
-    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-        e.preventDefault();
-    }
+    if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
 });
 
-window.onload = async () => {
+// 2. window.onload 대신 모듈 환경에 맞춰 더 안전하게 초기화 실행
+async function initApp() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     try {
         await seedAdmin();
         await loadData();
-        initAuth(); // 여기서 로그인 상태를 파악함
-        updateAdminUI(); // <--- 이 코드가 있는지 확인하세요! 반드시 있어야 합니다.
-        
+        initAuth(); 
+        updateAdminUI(); 
+
         await window.showTab('schedule');
+        
+        // 팝업 테스트를 위해 로컬스토리지 캐시를 강제로 삭제합니다. (나중에 지우셔도 됩니다)
+        localStorage.removeItem('hideUpPopupDate'); 
+        
+        console.log("팝업 호출 함수 실행 완료!");
         await window.checkAndShowPopup();
+        
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
     } finally {
-        if (loadingOverlay) {
-            loadingOverlay.classList.add('hidden');
-        }
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
     }
 
     const btnMin = document.getElementById('btnMin');
@@ -2634,7 +2618,6 @@ window.onload = async () => {
     const loginBtns = document.querySelectorAll('#adminBtn, #adminBtn_pc');
     loginBtns.forEach(btn => {
         btn.onclick = (e) => {
-            console.log("로그인 버튼이 클릭되었습니다.");
             window.promptAdmin(e);
         };
     });
@@ -2646,7 +2629,14 @@ window.onload = async () => {
             renderCalendar();
         }
     });
-};
+}
+
+// DOM이 준비되었는지 확인 후 initApp 안전 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
@@ -2688,7 +2678,6 @@ if (randomLoadingImg) {
         }
     };
 
-    // 타임아웃: 3초 후에도 이미지가 로드되지 않으면 계속 진행
     setTimeout(() => {
         if (!imageLoaded) {
             imageLoaded = true;
