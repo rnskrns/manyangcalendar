@@ -2573,16 +2573,23 @@ window.copyScheduleText = function() {
 };
 
 Object.assign(window, {
-    handleEventImgUpload, addMember, deleteMember,deletePopupImage,
-    handlePopupImgUpload: window.handlePopupImgUpload,
-    openMemberManager, renderMemberList, showToast, closeModal, formatTime12h,
-    setAMPM, openAddModal, saveEvent, deleteEvent, showInfo,
-    toggleMemo, openMemoInput, closeMemoInput, saveMemoItem, selectMemoTab, openMonthPicker, changePickerYear,
-    toggleUpBoard, toggleMobileUpBoard, loadUpItems, deleteUpItem,
-    promptAdmin, showAdminMenu, openAdminSettings, savePopupImage, saveUpItem, toggleMobileMemo,
-    removeEventImage,
-    openDayManager, renderDayManagerList, moveDayManagerItem, removeDayManagerItem, addDayManagerItem, uploadDayManagerImg, saveDayManager, deleteAllDayManagerItems,
-    openTextCopyModal, resetTextCopyModal, generateScheduleText, copyScheduleText
+    handleEventImgUpload, 
+    addMember, 
+    deleteMember,
+    openMemberManager, 
+    renderMemberList, 
+    showToast, 
+    closeModal, 
+    formatTime12h,
+    setAMPM, 
+    openAddModal, 
+    saveEvent, 
+    deleteEvent, 
+    showInfo,
+    openMemoInput, 
+    closeMemoInput, 
+    saveMemoItem, 
+    selectMemoTab
 });
 
 document.addEventListener('contextmenu', function(e) {
