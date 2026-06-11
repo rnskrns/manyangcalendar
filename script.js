@@ -1740,7 +1740,7 @@ window.closeUpPopup = function() {
     }
     const modal = document.getElementById('upPopupModal');
     if (modal) {
-        modal.style.display = 'none';
+        modal.style.display = 'flex';
     }
 };
 
@@ -2580,7 +2580,7 @@ Object.assign(window, {
     toggleMemo, openMemoInput, closeMemoInput, saveMemoItem, selectMemoTab, openMonthPicker, changePickerYear,
     toggleUpBoard, toggleMobileUpBoard, loadUpItems, deleteUpItem,
     promptAdmin, showAdminMenu, openAdminSettings, savePopupImage, saveUpItem, toggleMobileMemo,
-    closeUpPopup, checkAndShowPopup, removeEventImage,
+    removeEventImage,
     openDayManager, renderDayManagerList, moveDayManagerItem, removeDayManagerItem, addDayManagerItem, uploadDayManagerImg, saveDayManager, deleteAllDayManagerItems,
     openTextCopyModal, resetTextCopyModal, generateScheduleText, copyScheduleText
 });
