@@ -1491,6 +1491,9 @@ function updateSummary() {
 
     const todayLocal = new Date();
     todayLocal.setHours(0, 0, 0, 0);
+    
+    // 오늘 날짜의 dateId 생성 (showDayInfo에 전달하기 위함)
+    const dateId = `${todayLocal.getFullYear()}-${todayLocal.getMonth() + 1}-${todayLocal.getDate()}`;
 
     const allEventsRaw = [];
     const seenIds = new Set();
@@ -1518,11 +1521,11 @@ function updateSummary() {
             const item = document.createElement('div'); 
             const typeClass = (ev.type || '개인방송').replace(/\s+/g, '');
             
-            // 기존 'summary-item' 클래스에 'type-개인방송' 등의 클래스를 함께 달아줍니다.
             item.className = `summary-item type-${typeClass}`; 
-            item.onclick = () => showInfoByEvent(ev);
             
-            // 기존의 동그란 점(summary-dot)을 빼고 제목과 시간만 넣습니다.
+            // 💡 이 부분이 변경되었습니다! 개별 일정(showInfoByEvent) -> 통합 일정(showDayInfo)
+            item.onclick = () => showDayInfo(dateId, todaysEvents);
+            
             item.innerHTML = `<span style="flex: 1; text-align: left; font-weight: 800; white-space: pre-wrap; word-break: break-word;">${ev.title}</span>${ev.time ? `<span style="font-size: 12px; font-weight: 800; opacity: 0.8; white-space: nowrap;">${formatTime12h(ev.time)}</span>` : ''}`;            
             cont.appendChild(item);
         });

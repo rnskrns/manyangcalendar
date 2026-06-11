@@ -622,31 +622,7 @@ body {
     .main-header { display: flex; flex-direction: column; grid-template-columns: none; width: 100%; padding: 20px 16px 20px; gap: 16px; }
     .header-center { width: 100%; padding: 0; }
     .header-left, .header-right { padding: 0; width: 100%; justify-content: center; }
-    .today-summary {
-        width: 100%; max-width: 100%;
-        position: relative !important;
-        z-index: 50 !important;
-        pointer-events: auto !important;
-    }
-    .summary-item {
-        position: relative !important;
-        z-index: 51 !important;
-        pointer-events: auto !important;
-        cursor: pointer !important;
-    }
-    
-    /* 2. 모바일 주간 캘린더 뷰의 일정 태그 클릭 활성화 */
-    .week-row.today-row {
-        position: relative !important;
-        z-index: 40 !important; /* 다른 배경/그림자 요소 위로 올림 */
-    }
-    .week-events, .week-row .event-tag {
-        position: relative !important;
-        z-index: 41 !important;
-        pointer-events: auto !important; /* 클릭 이벤트 강제 적용 */
-        cursor: pointer !important;
-    }
-
+    .today-summary { width: 100%; max-width: 100%; }
     .week-row {
         background-color: #E8F0DC !important; 
         border-radius: 30px !important; /* 완전한 알약 모양 */
