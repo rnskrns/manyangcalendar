@@ -277,6 +277,8 @@ body {
     }
 }
 
+
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-button { display: none !important; width: 0 !important; height: 0 !important; -webkit-appearance: none; }
 ::-webkit-scrollbar-track { background: #FFFFFF; border-radius: 30px; }
@@ -344,7 +346,12 @@ body {
 .week-row.today-row .week-day-name, .week-row.today-row .week-day-num { color: #FFFFFF !important; }
 .week-day-num { font-family: 'TMoneyDungunbaram', sans-serif !important; font-size: 20px; font-weight: 900; color: var(--text-dark); }
 .event-container { flex: 1 1 0% !important; display: flex !important; flex-direction: column !important; height: 100% !important; gap: 6px !important; padding: 6px !important; box-sizing: border-box !important; }
-.week-events { padding: 10px; }
+.week-events { 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; /* 숫자(8px)를 늘리거나 줄여서 원하는 간격으로 맞춰보세요! */
+}
 .day { min-height: 200px; height: auto; display: flex; flex-direction: column; background: transparent; border: 1px dashed#8eac67; margin-top: -1px; margin-left: -1px; transition: 0.2s; overflow: hidden; border-radius: 10px !important; position: relative; }
 .day:hover { 
     background: var(--light-green) !important;
@@ -615,8 +622,31 @@ body {
     .main-header { display: flex; flex-direction: column; grid-template-columns: none; width: 100%; padding: 20px 16px 20px; gap: 16px; }
     .header-center { width: 100%; padding: 0; }
     .header-left, .header-right { padding: 0; width: 100%; justify-content: center; }
-    .today-summary { width: 100%; max-width: 100%; }
+    .today-summary {
+        width: 100%; max-width: 100%;
+        position: relative !important;
+        z-index: 50 !important;
+        pointer-events: auto !important;
+    }
+    .summary-item {
+        position: relative !important;
+        z-index: 51 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
     
+    /* 2. 모바일 주간 캘린더 뷰의 일정 태그 클릭 활성화 */
+    .week-row.today-row {
+        position: relative !important;
+        z-index: 40 !important; /* 다른 배경/그림자 요소 위로 올림 */
+    }
+    .week-events, .week-row .event-tag {
+        position: relative !important;
+        z-index: 41 !important;
+        pointer-events: auto !important; /* 클릭 이벤트 강제 적용 */
+        cursor: pointer !important;
+    }
+
     .week-row {
         background-color: #E8F0DC !important; 
         border-radius: 30px !important; /* 완전한 알약 모양 */
@@ -831,6 +861,8 @@ body {
     }
     
     body { padding-bottom: 100px !important; }
+    
+
 }
 
 .up-item-card { background: white; border: 2px solid #C5D8A4; border-radius: 24px; padding: 16px; margin-bottom: 12px; position: relative; }
@@ -914,4 +946,53 @@ body {
 
 .admin-only-btn.is-admin-visible { 
     display: flex !important; 
+}
+
+/* =========================================
+   통합일정상세 팝업창 모바일(스마트폰) 사이즈 최적화 (강력버전)
+   ========================================= */
+@media screen and (max-width: 1050px) {
+    #dayInfoModal .event-modal-box {
+        width: 95% !important;
+        min-width: 320px !important;
+    }
+    
+    #dayInfoModal #dayInfoList > div {
+        max-width: 100% !important;
+        min-width: auto !important;
+    }
+    
+    #dayInfoModal #dayInfoList h2 {
+        font-size: 22px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    #dayInfoModal #dayInfoList .info-time {
+        font-size: 13px !important;
+        padding: 8px 16px !important;
+    }
+    
+    #dayInfoModal #dayInfoList .info-profiles {
+        gap: 12px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    #dayInfoModal #dayInfoList .profile-card {
+        width: 60px !important;
+        gap: 6px !important;
+    }
+    
+    #dayInfoModal #dayInfoList .profile-img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    #dayInfoModal #dayInfoList .profile-name {
+        font-size: 12px !important;
+    }
+    
+    #dayInfoModal #dayInfoNoticeArea {
+        max-width: 100% !important;
+        margin-top: 15px !important;
+    }
 }
