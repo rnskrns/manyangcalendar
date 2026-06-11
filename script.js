@@ -1740,7 +1740,7 @@ window.closeUpPopup = function() {
     }
     const modal = document.getElementById('upPopupModal');
     if (modal) {
-        modal.style.display = 'flex';
+        modal.style.display = 'none';
     }
 };
 
@@ -1806,7 +1806,7 @@ window.checkAndShowPopup = async function() {
 
         const modal = document.getElementById('upPopupModal');
         if (modal) {
-            modal.style.setProperty('display', 'flex', 'important');
+            modal.style.display = 'flex';
         }
     } catch (error) { console.error("Popup UP Load Error:", error); }
 };
