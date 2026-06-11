@@ -224,8 +224,18 @@
 
             <div id="upPanel" class="memo-panel-container">
                 <button class="mobile-player-close" onclick="toggleMobileUpBoard()" title="닫기" id="mobileUpCloseBtn" style="display: none;"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
-                <div class="memo-panel-header" style="justify-content: center;">
+                <div class="memo-panel-header" style="position: relative; justify-content: center;">
                     <h3 style="margin: 0; font-family: 'AliceDigitalLearning'; font-weight: 900; color: #7ca349;">헤드번팅 꿍</h3>
+                    <button id="upAddBtn" class="memo-add-button admin-only-btn" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%);" onclick="openUpInput()">+</button>
+                </div>
+                <div id="upInputArea" class="memo-input-area hidden">
+                    <input type="text" id="upTitleInput" class="admin-input" placeholder="컨텐츠 이름" style="width:100%; padding:10px; font-size:14px; margin-bottom:8px;">
+                    <input type="url" id="upLinkInput" class="admin-input" placeholder="링크 주소 (https://...)" style="width:100%; padding:10px; font-size:14px; margin-bottom:8px;">
+                    <input type="date" id="upDeadlineInput" class="admin-input" title="마감 날짜" style="width:100%; padding:10px; font-size:14px; margin-bottom:8px;">
+                    <div class="memo-input-actions">
+                        <button class="btn btn-cancel" onclick="closeUpInput()">취소</button>
+                        <button class="btn btn-save" onclick="saveUpItem()">추가하기</button>
+                    </div>
                 </div>
                 <div id="upList" class="memo-list" style="padding: 10px;"></div>
             </div>
@@ -339,10 +349,6 @@
     <div id="confirmModal" class="modal"><div class="modal-content" style="max-width: 320px; align-items: center; text-align: center;"><h3 id="confirmMessage" class="font-black text-lg mb-6"></h3><div class="btn-group" style="width: 100%;"><button class="btn btn-cancel" onclick="closeModal('confirmModal')">취소</button><button id="confirmBtn" class="btn btn-danger">삭제</button></div></div></div>
     
     <div id="monthPickerModal" class="modal"><div class="modal-content" style="max-width: 380px;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;"><button class="nav-btn" onclick="changePickerYear(-1)">◀</button><h3 id="pickerYearDisplay" class="font-black text-2xl m-0"></h3><button class="nav-btn" onclick="changePickerYear(1)">▶</button></div><div class="month-picker-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;"></div><button class="btn btn-cancel mt-6" onclick="closeModal('monthPickerModal')">닫기</button></div></div>
-
-    <div id="popupAdminModal" class="modal"><div class="modal-content" style="max-width: 420px; padding: 25px;"><h3 class="modal-title" style="text-align: center; margin-bottom: 20px; font-family: 'TMoneyDungunbaram', sans-serif;">업링크 관리</h3><div class="form-group" style="margin-bottom: 24px;"><label style="font-weight: bold; margin-bottom: 8px; display: block;">입장 팝업 상단 이미지</label><input type="file" id="popupImgFileInput" accept="image/*" onchange="handlePopupImgUpload(this)" style="display: block; margin-bottom: 10px; font-size: 13px; color: #64748b; cursor: pointer; width: 100%;"><div style="display: flex; gap: 8px;"><input type="text" id="popupImageUrlInput" placeholder="https://..." style="flex: 1; padding: 12px; border-radius: 30px; border: 1px solid #ddd;"><button class="btn btn-save" style="padding: 10px 16px; margin: 0; flex-shrink: 0;" onclick="savePopupImage()">적용</button><button type="button" onclick="deletePopupImage()" style="background: #ef4444; color: white; padding: 10px 16px; margin: 0; flex-shrink: 0; border-radius: 30px; font-weight: bold; border: none; cursor: pointer;">삭제</button></div></div><hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"><div class="form-group" style="margin-bottom: 0;"><label style="font-weight: bold; margin-bottom: 8px; display: block;">새 UP! 링크 추가</label><input type="text" id="upTitleInput" class="admin-input" placeholder="컨텐츠 이름" style="margin-bottom: 8px;"><input type="url" id="upLinkInput" class="admin-input" placeholder="링크 주소 (https://...)" style="margin-bottom: 8px;"><input type="date" id="upDeadlineInput" class="admin-input" title="마감 날짜" style="margin-bottom: 12px;"><button class="btn btn-save" style="width: 100%; padding: 12px; margin: 0;" onclick="saveUpItem()">UP! 추가하기</button></div><button class="btn btn-cancel" style="margin-top: 20px; width: 100%;" onclick="closeModal('popupAdminModal')">닫기</button></div></div>
-    
-    <div id="upPopupModal" class="modal"><div class="modal-content" style="max-width: 550px; min-height: 300px; padding: 30px; overflow-y: auto;"><div id="popupUpList" style="margin-bottom: 20px;"></div><div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-top: auto;"><label style="font-size: 13px; color: #7a7a7a; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="hidePopupToday" style="accent-color: #7ca349; width: 16px; height: 16px;">오늘 하루 안 보기</label><button class="btn btn-save" style="padding: 10px 20px; font-size: 14px; flex: none;" onclick="closeUpPopup()">닫기</button></div></div></div>
 
     <nav class="mobile-bottom-nav">
         <button class="nav-item" onclick="showTab('schedule')">
