@@ -1735,7 +1735,9 @@ window.closeUpPopup = function() {
         localStorage.setItem('hideUpPopupDate', today);
     }
     const modal = document.getElementById('upPopupModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+    }
 };
 
 window.checkAndShowPopup = async function() {
@@ -1798,7 +1800,7 @@ window.checkAndShowPopup = async function() {
             `;
         });
 
-        document.getElementById('upPopupModal').style.display = 'flex';
+            document.getElementById('upPopupModal').style.display = 'flex';
     } catch (error) { console.error("Popup UP Load Error:", error); }
 };
 
