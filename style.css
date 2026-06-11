@@ -384,11 +384,11 @@ body {
 .dragging-ghost { background-color: var(--light-green) !important; opacity: 0.6; border: 2px dashed darkolivegreen; }
 .event-tag.long-term { position: relative; height: 28px !important; }
 
-.type-개인방송 { background-color: rgb(194, 230, 154) !important; color: #2a5a17 !important; } /* 연한 분홍 배경 */
+.type-개인방송 { background-color:#b1cf8a !important; color: #2a5a17 !important; } /* 연한 분홍 배경 */
 .type-합방 { background-color: #dfd0e9 !important; color: #41175a !important; } /* 베이지 배경 + 진한 분홍 텍스트 */
 .type-휴방 { background-color: #d1d1d1 !important; color: #464646 !important; }
 .type-시네티 { background-color: #c4d3e9; color: #143e8c; }
-.type-미확정 { background-color: rgb(194, 230, 154) !important; color: #2a5a17 !important; } /* 연한 분홍 배경 */
+.type-미확정 { background-color: #b1cf8a !important; color: #2a5a17 !important; } /* 연한 분홍 배경 */
 
 .modal { 
     display: none; 
@@ -753,11 +753,11 @@ body {
         color: #7ca349 !important; background: transparent !important; border-top: none !important; border-left: none !important; border-right: none !important;
     }
 
-    .week-row.today-row .event-tag.type-개인방송 { background-color: rgb(194, 230, 154) !important; color: #2a5a17 !important; }
+    .week-row.today-row .event-tag.type-개인방송 { background-color:#b1cf8a !important; color: #2a5a17 !important; }
     .week-row.today-row .event-tag.type-합방 { background-color: #dfd0e9 !important; color: #41175a !important; }
     .week-row.today-row .event-tag.type-휴방 { background-color: #d1d1d1 !important; color: #464646 !important; }
     .week-row.today-row .event-tag.type-시네티 { background-color: #c4d3e9; color: #143e8c; }
-    .week-row.today-row .event-tag.type-미확정 { background-color: rgb(194, 230, 154) !important; color: #2a5a17 !important; }
+    .week-row.today-row .event-tag.type-미확정 { background-color: #b1cf8a !important; color: #2a5a17 !important; }
     .week-row.today-row .event-tag { border: none !important; }
     .week-day-num { font-family: 'TMoneyDungunbaram', sans-serif !important; font-weight: 700 !important; }
 
