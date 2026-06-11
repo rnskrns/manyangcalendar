@@ -395,15 +395,13 @@ body {
     position: fixed; 
     top: 0; 
     left: 0; 
-    width: 100%; 
-    height: 100%; 
-    /* 기존 0.4에서 0.2로 낮춰 더 투명하게 만듦 */
+    width: 100vw; 
+    height: 100vh; 
     background: rgba(0, 0, 0, 0.2); 
-    /* 기존 8px에서 4px로 낮춰 뒤가 더 잘 보이게 만듦 */
     backdrop-filter: blur(4px); 
     align-items: center; 
     justify-content: center; 
-    z-index: 9999; 
+    z-index: 10000; 
 }
 
 .modal-content { background: #FFFFFF; width: 90%; max-width: 480px; padding: 30px; border-radius: 30px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; height: auto; max-height: 95vh; }
