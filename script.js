@@ -2156,7 +2156,7 @@ function ensureDayInfoModal() {
     if (document.getElementById('dayInfoModal')) return;
     const html = `
     <div id="dayInfoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; backdrop-filter:blur(2px);">
-        <div class="event-modal-box" style="display:flex; flex-direction:column; padding:32px 40px; max-height:85vh; width:fit-content; min-width:350px; max-width:95%; background:#fff; border-radius:30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <div class="event-modal-box" style="display:flex; flex-direction:column; padding:32px 40px; max-height:85vh; width:fit-content; min-width:600px; max-width:850px; border-radius:25px; background:#fff; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         <h2 id="dayInfoTitle" style="margin-top:0; margin-bottom:24px; font-family:'TMoneyDungunbaram', sans-serif; color:#7A5A2F; font-size:34px; font-weight:bold; text-align:center; flex-shrink:0;"></h2>
             <div id="dayInfoList" style="flex:1; display:flex; flex-direction:column; gap:20px; align-items:center; overflow-x:hidden; overflow-y:auto; padding:10px 0; width: 100%;"></div>
             <div id="dayInfoNoticeArea" style="width: 100%; max-width: 600px; margin: 15px auto 0; display: none;"></div>
@@ -2202,27 +2202,30 @@ window.showDayInfo = function(dateId, dayEvents) {
                     const name = nameRaw.trim(); if (!name) return;
                     const m = members[name] || { name, img: `https://placehold.co/100x100?text=${encodeURIComponent(name[0] || '')}` };
                     profsHtml += `
-                        <div class="profile-card">
-                            <img src="${m.img}" class="profile-img" onerror="this.src='https://placehold.co/100x100?text=?'">
-                            <div class="profile-name">${m.name}</div>
+                        <!-- 카드 전체 폭을 늘리고, 가운데 정렬 속성 추가 -->
+                        <div class="profile-card" style="display: flex; flex-direction: column; align-items: center; width: 90px; gap: 8px;">
+                            <!-- 이미지 크기(width, height)를 80px로 크게 확장 -->
+                            <img src="${m.img}" class="profile-img" style="width: 80px; height: 80px;" onerror="this.src='https://placehold.co/100x100?text=?'">
+                            <!-- 글씨 크기(font-size)를 16px로 확장 -->
+                            <div class="profile-name" style="font-size: 16px;">${m.name}</div>
                         </div>`;
                 });
             }
 
             const cardWrapper = document.createElement('div');
-            cardWrapper.style.cssText = 'width: 100%; min-width: 320px; max-width: 450px; display: flex; flex-direction: column;';
+            cardWrapper.style.cssText = 'width: 100%; min-width: 600px; max-width: 850px; display: flex; flex-direction: column;';
             
             cardWrapper.innerHTML = `
                 <div class="info-block" style="flex:1; display:flex; flex-direction:column; margin:0;">
-                        <h2 style="text-align:center; margin-top:0; margin-bottom:15px; font-size:24px; font-weight:900; word-break:keep-all; white-space:pre-wrap;">${ev.title || ''}</h2>                    <div style="text-align:center; margin-bottom: 24px;">
-                        <div class="info-time ${typeClass}" style="display:inline-block; padding: 6px 16px; border-radius: 30px; font-weight: 800; font-size: 14px;">
+                    <h2 style="text-align:center; margin-top:0; margin-bottom:20px; font-size:34px; font-weight:900; word-break:keep-all;">${ev.title || ''}</h2>
+                    <div style="text-align:center; margin-bottom: 30px;">
+                        <div class="info-time ${typeClass}" style="display:inline-block; padding: 10px 24px; border-radius: 30px; font-weight: 800; font-size: 18px;">
                             ${timeTypeStr}
                         </div>
-                    </div>
-                    <div class="info-image-container" style="text-align:center; margin-bottom: 20px;">
+                    </div>                    <div class="info-image-container" style="text-align:center; margin-bottom: 20px;">
                         ${ev.imageUrl ? `<img src="${ev.imageUrl}" alt="${ev.title}" class="info-image" style="max-width:100%; border-radius:30px;" onerror="this.outerHTML='<a href=&quot;${ev.imageUrl}&quot; target=&quot;_blank&quot; class=&quot;info-link&quot;>이미지 보기</a>'">` : ''}
                     </div>
-                    <div class="info-profiles" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom: 20px;">
+                    <div class="info-profiles" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-bottom: 30px;">
                         ${profsHtml}
                     </div>
                 </div>
@@ -2232,7 +2235,7 @@ window.showDayInfo = function(dateId, dayEvents) {
 
             if (index < displayEvents.length - 1) {
                 const divider = document.createElement('div');
-                divider.style.cssText = 'height: 2px; width: 100%; max-width: 450px; background-color: #f1f5f9; margin: 15px 0; flex-shrink: 0; border-radius: 30px;';
+                divider.style.cssText = 'height: 2px; width: 100%; max-width: 850px; background-color: #f1f5f9; margin: 25px 0; flex-shrink: 0; border-radius: 30px;';
                 list.appendChild(divider);
             }
         });
