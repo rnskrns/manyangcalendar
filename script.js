@@ -1660,7 +1660,11 @@ window.saveUpItem = async function() {
     try {
         await addDoc(collection(db, 'up'), { title, link, deadline, createdAt: new Date() });
         document.getElementById('upTitleInput').value = ''; document.getElementById('upLinkInput').value = ''; document.getElementById('upDeadlineInput').value = '';
-        loadUpItems(); showToast('UP 항목이 추가되었습니다.');
+        
+        // 새 항목 추가 시 팝업 닫힘 기록 초기화 (다음 새로고침 시 무조건 팝업 노출)
+        localStorage.removeItem('hideUpPopupDate');
+        
+        loadUpItems(); showToast('UP 항목이 추가되었습니다. 새로고침 시 팝업이 다시 나옵니다.');
     } catch (error) { showToast('저장 실패: ' + error.message); }
 };
 
@@ -1800,7 +1804,10 @@ window.checkAndShowPopup = async function() {
             `;
         });
 
-            document.getElementById('upPopupModal').style.display = 'flex';
+        const modal = document.getElementById('upPopupModal');
+        if (modal) {
+            modal.style.setProperty('display', 'flex', 'important');
+        }
     } catch (error) { console.error("Popup UP Load Error:", error); }
 };
 
@@ -1914,6 +1921,7 @@ window.savePopupImage = async function() {
     const imgUrl = document.getElementById('popupImageUrlInput').value.trim();
     try {
         await setDoc(doc(db, 'settings', 'popup'), { imageUrl: imgUrl });
+        localStorage.removeItem('hideUpPopupDate');
         showToast('팝업 이미지가 설정되었습니다. 새로고침 후 확인하세요.');
     } catch(e) { showToast('설정 저장 실패: ' + e.message); }
 };
@@ -2020,6 +2028,7 @@ window.deletePopupImage = async function() {
     try {
         await deleteDoc(doc(db, 'settings', 'popup'));
         document.getElementById('popupImageUrlInput').value = '';
+        localStorage.removeItem('hideUpPopupDate');
         showToast('팝업 이미지가 삭제되었습니다.');
     } catch(e) { showToast('삭제 실패: ' + e.message); }
 };
