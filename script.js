@@ -1768,6 +1768,32 @@ window.checkAndShowPopup = async function() {
             
             if (popupImageUrl) {
                 popupList.innerHTML += `<div style="margin-bottom: 16px;"><img src="${popupImageUrl}" style="width: 100%; height: auto; border-radius: 30px; display: block;" alt="Notice Image"></div>`;
+        let validItems = [];
+        const todayLocal = new Date();
+        const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
+
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.deadline && data.deadline < todayStr) return;
+            validItems.push({ id: docSnap.id, ...data });
+        });
+
+        if (!popupImageUrl && validItems.length === 0) return;
+
+        validItems.sort((a, b) => {
+            if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+            return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+        });
+        
+        popupList.innerHTML = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #7ca349;">헤드번팅 꿍</div>`;
+        
+        if (popupImageUrl) { popupList.innerHTML += `<div style="margin-bottom: 16px;"><img src="${popupImageUrl}" style="width: 100%; height: auto; border-radius: 30px; display: block;" alt="Notice Image"></div>`; }
+
+        validItems.forEach(data => {
+            let deadlineText = '';
+            if (data.deadline) {
+                const parts = data.deadline.split('-');
+                if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 12px; font-weight: 600; margin-top: 4px; font-family: 'TMoneyDungunbaram', sans-serif;">${parts[1]}.${parts[2]} 마감</div>`;
             }
 
             const todayLocal = new Date();
@@ -1793,14 +1819,28 @@ window.checkAndShowPopup = async function() {
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
                             </a>
                         </div>
+            popupList.innerHTML += `
+                <div class="up-item-card" style="background: #ffffff; border: 2px solid #C5D8A4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 30px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; cursor: pointer;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#F0F4EA'" onmouseout="this.style.background='#ffffff'">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 800; color: #1e293b; font-size: 15px; font-family: 'TMoneyDungunbaram', sans-serif;">${data.title}</div>
+                        ${deadlineText}
                     </div>
                 `;
             });
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <a href="${data.link}" target="_blank" style="color: #7ca349; display: flex; align-items: center;" onclick="event.stopPropagation()">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
 
             if (popupImageUrl || popupList.innerHTML.trim() !== '') {
                 document.getElementById('upPopupModal').style.display = 'flex';
             }
         }
+        document.getElementById('upPopupModal').style.display = 'flex';
     } catch (error) { console.error("Popup UP Load Error:", error); }
 };
 
