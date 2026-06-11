@@ -2443,6 +2443,8 @@ document.addEventListener('dragstart', function(e) {
 async function initApp() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     try {
+        // index.html에서 이미지를 띄우므로 여기서 중복으로 처리할 필요가 없습니다.
+        
         await seedAdmin();
         await loadData();
         initAuth(); 
@@ -2452,7 +2454,12 @@ async function initApp() {
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
     } finally {
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        // 콘텐츠를 먼저 보이게 하고 로딩 오버레이를 숨깁니다.
+        document.body.classList.remove('is-loading');
+        if (loadingOverlay) { 
+            loadingOverlay.classList.add('hidden'); 
+            setTimeout(() => { loadingOverlay.remove(); }, 500); 
+        }
     }
 
     const btnMin = document.getElementById('btnMin');
@@ -2474,12 +2481,9 @@ async function initApp() {
     });
 }
 
-// DOM이 준비되었는지 확인 후 initApp 안전 실행
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
-}
+// Use window.onload to ensure all resources are loaded before hiding the loading screen
+window.onload = initApp;
+
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
@@ -2491,43 +2495,3 @@ window.addEventListener('error', () => {
     const loadingOverlay = document.getElementById('loadingOverlay');
     if (loadingOverlay) loadingOverlay.classList.add('hidden');
 });
-
-const loadingGifs = [
-    "https://i.postimg.cc/13HBpsL3/Honeycam-2026-06-10-20-44-02.webp",
-    "https://i.postimg.cc/Bngpx4dv/Honeycam-2026-06-10-20-45-47.webp",
-    "https://i.postimg.cc/4x5PzsrN/Honeycam-2026-06-10-20-46-53.webp"
-];
-
-const randomLoadingImg = document.getElementById('randomLoadingImg');
-if (randomLoadingImg) {
-    randomLoadingImg.style.opacity = '0';
-    randomLoadingImg.style.transition = 'opacity 0.3s ease'; 
-
-    const randomGif = loadingGifs[Math.floor(Math.random() * loadingGifs.length)];
-    let imageLoaded = false;
-    
-    randomLoadingImg.onload = () => {
-        if (!imageLoaded) {
-            imageLoaded = true;
-            randomLoadingImg.style.opacity = '1';
-        }
-    };
-
-    randomLoadingImg.onerror = () => {
-        if (!imageLoaded) {
-            imageLoaded = true;
-            randomLoadingImg.style.opacity = '1';
-            randomLoadingImg.alt = "이미지를 불러오지 못했습니다 🥲";
-        }
-    };
-
-    setTimeout(() => {
-        if (!imageLoaded) {
-            imageLoaded = true;
-            randomLoadingImg.style.opacity = '1';
-            randomLoadingImg.alt = "이미지 로딩 중...";
-        }
-    }, 3000);
-
-    randomLoadingImg.src = randomGif;
-}thawna

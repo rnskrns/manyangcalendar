@@ -8,10 +8,9 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="MANYANG">
     <meta property="og:description" content="방송일정">
-    <link rel="preload" as="image" href="https://i.postimg.cc/13HBpsL3/Honeycam-2026-06-10-20-44-02.webp">
-    <link rel="preload" as="image" href="https://i.postimg.cc/Bngpx4dv/Honeycam-2026-06-10-20-45-47.webp">
-    <link rel="preload" as="image" href="https://i.postimg.cc/4x5PzsrN/Honeycam-2026-06-10-20-46-53.webp">
-
+    <link rel="preload" as="image" href="https://i.postimg.cc/13HBpsL3/Honeycam-2026-06-10-20-44-02.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="https://i.postimg.cc/Bngpx4dv/Honeycam-2026-06-10-20-45-47.webp" fetchpriority="high">
+    <link rel="preload" as="image" href="https://i.postimg.cc/4x5PzsrN/Honeycam-2026-06-10-20-46-53.webp" fetchpriority="high">
 
     <link rel="shortcut icon" href="https://i.postimg.cc/hj4JKLpk/25066838751c1babb.png" />
     <link rel="icon" href="https://i.postimg.cc/hj4JKLpk/25066838751c1babb.png" type="image/png">
@@ -32,6 +31,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="style.css?v=20260615">
+    <style>
+        body.is-loading > *:not(#loadingOverlay) {
+            visibility: hidden;
+        }
+    </style>
 
     <style>
         .event-modal-box { box-shadow: 0 10px 30px rgba(122, 60, 122, 0.15); }
@@ -56,7 +60,7 @@
         @keyframes force-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body id="mainBody">
+<body id="mainBody" class="is-loading">
 
     <!-- 네이버 링크 공유 썸네일 대비용 숨김 이미지 -->
     <div style="position: absolute; width: 0; height: 0; overflow: hidden; z-index: -1;">
@@ -148,6 +152,23 @@
             <span>L</span><span>O</span><span>A</span><span>D</span><span>I</span><span>N</span><span>G</span>
         </div>
     </div>
+
+    <script>
+        (function() {
+            const gifs = [
+                "https://i.postimg.cc/13HBpsL3/Honeycam-2026-06-10-20-44-02.webp",
+                "https://i.postimg.cc/Bngpx4dv/Honeycam-2026-06-10-20-45-47.webp",
+                "https://i.postimg.cc/4x5PzsrN/Honeycam-2026-06-10-20-46-53.webp"
+            ];
+            const pickedGif = gifs[Math.floor(Math.random() * gifs.length)];
+            const imgTarget = document.getElementById('randomLoadingImg');
+            
+            imgTarget.onload = function() {
+                imgTarget.style.opacity = '1';
+            };
+            imgTarget.src = pickedGif;
+        })();
+    </script>
 
     <header class="main-header">
         <div class="header-left"></div>
