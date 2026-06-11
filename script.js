@@ -2530,4 +2530,4 @@ if (randomLoadingImg) {
     }, 3000);
 
     randomLoadingImg.src = randomGif;
-}
+}thawna
