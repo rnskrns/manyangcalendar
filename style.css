@@ -351,7 +351,20 @@ body {
     flex-direction: column; 
     gap: 5px; /* 숫자(8px)를 늘리거나 줄여서 원하는 간격으로 맞춰보세요! */
 }
-.day { min-height: 200px; height: auto; display: flex; flex-direction: column; background: transparent; border: 1px dashed#8eac67; margin-top: -1px; margin-left: -1px; transition: 0.2s; overflow: hidden; border-radius: 10px !important; position: relative; }
+.day {
+    min-height: 200px;
+    height: auto !important; /* 일정이 많으면 자동으로 늘어나도록 보장 */
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    border: 1px dashed #8eac67;
+    margin-top: -1px;
+    margin-left: -1px;
+    transition: 0.2s;
+    overflow: visible !important; /* hidden을 visible로 변경하여 일정이 잘리지 않게 설정 */
+    border-radius: 10px !important;
+    position: relative;
+}
 .day:hover { 
     background: var(--light-green) !important;
     border-color: var(--point-green) !important; 
@@ -378,6 +391,7 @@ body {
     border-radius: 15px !important;
     width: 100% !important; box-sizing: border-box !important;
 }
+
 .event-tag:hover { transform: scale(0.97); }
 .event-time-badge { position: absolute; top: 12px; left: 15px; display: inline-block; border: 1.5px solid #FFFFFF; background-color: #FFFFFF; border-radius: 30px; padding: 3px 7px; font-size: 10px; font-weight: 800; line-height: 1; color: inherit; font-family: inherit !important; }
 .event-tag div {
