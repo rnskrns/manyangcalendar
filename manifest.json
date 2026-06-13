@@ -1,11 +1,11 @@
 {
-  "name": "Manyang Calendar",
-  "short_name": "manyang",
+  "name": "HTVVI",
+  "short_name": "HTVVI",
   "icons": [
     {
-      "src": "https://res.cloudinary.com/dtlqzklk5/image/upload/v1781257248/nxarvfowbshztrznbcnd.jpg",
+      "src": "https://i.postimg.cc/qRD2Q4Jx/jemog-eul-iblyeoghaejuseyo.png",
       "sizes": "192x192",
-      "type": "image/jpg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
