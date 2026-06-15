@@ -2636,17 +2636,17 @@ async function initApp() {
 // Use window.onload to ensure all resources are loaded before hiding the loading screen
 window.onload = async () => {
     try {
-        // 기존 질문자님 코드들 (initAuth, loadData 등등)
-        // ...
+        // 👇 이 부분이 지워져서 캘린더가 안 떴던 것입니다! 다시 시동을 걸어줍니다.
+        await initApp();
         
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
     }
 
-    // ⭐️ 추가할 부분: 여기서 팝업 호출!
+    // ⭐️ 팝업 띄우기 함수 실행!
     window.checkAndShowPopup();
 
-    // 기존의 로딩 화면 지우는 코드 유지
+    // 기존의 로딩 화면 지우는 코드
     setTimeout(() => {
         const loadingOverlay = document.getElementById('loadingOverlay');
         if (loadingOverlay) { loadingOverlay.classList.add('hidden'); }

@@ -410,10 +410,11 @@ body {
 .type-시네티 { background-color: #c4d3e9; color: #143e8c; }
 .type-미확정 { background-color: #b1cf8a !important; color: #2a5a17 !important; } /* 연한 분홍 배경 */
 
+.event-modal-box { max-width: 850px; width: 95%; }
+
 .modal { 
     display: none; 
     position: fixed; 
-.event-modal-box { max-width: 850px; width: 95%; }
     top: 0; 
     left: 0; 
     width: 100vw; 
@@ -424,6 +425,8 @@ body {
     justify-content: center; 
     z-index: 99999; 
 }
+
+
 
 .modal-content { background: #FFFFFF; width: 90%; max-width: 480px; padding: 30px; border-radius: 30px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; height: auto; max-height: 95vh; }
 .modal-title { font-size: 24px; font-weight: 900; margin-bottom: 25px; font-family: inherit; }
