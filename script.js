@@ -1761,13 +1761,23 @@ window.closeEntryPopup = function() {
 
 // 업링크 데이터 로드 및 팝업 표시
 async function showEntryPopupIfItemsExist() {
+    console.log("1. 팝업 함수 진입 성공!");
+
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    if (localStorage.getItem('hideUpPopupDate') === dateStr) return;
+    
+    // 💡 테스트를 위해 아래 한 줄을 임시로 주석(//) 처리했습니다. 무조건 뜨게 만듭니다!
+    // if (localStorage.getItem('hideUpPopupDate') === dateStr) {
+    //     console.log("2. 오늘 하루 보지 않기 설정됨 -> 팝업 안 띄움");
+    //     return;
+    // }
 
     try {
         const snapshot = await getDocs(collection(db, 'up'));
-        if (snapshot.empty) return;
+        if (snapshot.empty) {
+            console.log("3. DB에 등록된 UP 항목이 아예 없습니다.");
+            return;
+        }
 
         let items = [];
         snapshot.forEach(docSnap => { items.push({ id: docSnap.id, ...docSnap.data() }); });
@@ -1779,7 +1789,12 @@ async function showEntryPopupIfItemsExist() {
         
         items = items.filter(data => !(data.deadline && data.deadline < todayFormatted));
         
-        if (items.length === 0) return; 
+        console.log(`4. 마감 안 된 UP 항목 개수: ${items.length}개`);
+        
+        if (items.length === 0) {
+            console.log("5. 띄울 항목이 없어서 종료합니다.");
+            return; 
+        }
 
         items.sort((a, b) => {
             if(a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
@@ -1787,6 +1802,10 @@ async function showEntryPopupIfItemsExist() {
         });
 
         const list = document.getElementById('entryPopupList');
+        if (!list) {
+            console.error("6. 에러! HTML에 entryPopupList 아이디가 없습니다. index.html을 확인해주세요.");
+            return;
+        }
         list.innerHTML = '';
         
         items.forEach(data => {
@@ -1814,7 +1833,14 @@ async function showEntryPopupIfItemsExist() {
             list.appendChild(entry);
         });
 
-        document.getElementById('entryPopupModal').style.display = 'flex';
+        const modal = document.getElementById('entryPopupModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            console.log("7. 팝업 띄우기 성공!");
+        } else {
+            console.error("7. 에러! HTML에 entryPopupModal 아이디가 없습니다.");
+        }
+        
     } catch (error) {
         console.error("팝업 데이터 로딩 에러:", error);
     }
