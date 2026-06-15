@@ -1749,6 +1749,77 @@ window.deleteUpItem = async function(id) {
     }
 };
 
+window.closeEntryPopup = function() {
+    const hideToday = document.getElementById('hideEntryPopupToday').checked;
+    if (hideToday) {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+        localStorage.setItem('hideUpPopupDate', dateStr);
+    }
+    document.getElementById('entryPopupModal').style.display = 'none';
+};
+
+// 업링크 데이터 로드 및 팝업 표시
+async function showEntryPopupIfItemsExist() {
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+    if (localStorage.getItem('hideUpPopupDate') === dateStr) return;
+
+    try {
+        const snapshot = await getDocs(collection(db, 'up'));
+        if (snapshot.empty) return;
+
+        let items = [];
+        snapshot.forEach(docSnap => { items.push({ id: docSnap.id, ...docSnap.data() }); });
+        
+        // 마감 날짜가 지난 항목 제외
+        const todayLocal = new Date();
+        todayLocal.setHours(0, 0, 0, 0);
+        const todayFormatted = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
+        
+        items = items.filter(data => !(data.deadline && data.deadline < todayFormatted));
+        
+        if (items.length === 0) return; 
+
+        items.sort((a, b) => {
+            if(a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+            return (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0);
+        });
+
+        const list = document.getElementById('entryPopupList');
+        list.innerHTML = '';
+        
+        items.forEach(data => {
+            let deadlineText = '';
+            if (data.deadline) {
+                const parts = data.deadline.split('-');
+                if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 11px; font-weight: 600; margin-top: 4px; font-family: 'TMoneyDungunbaram', sans-serif;">${parts[1]}.${parts[2]} 마감</div>`;
+            }
+            
+            const entry = document.createElement('div');
+            entry.style.cssText = "background: #ffffff; border: 2px solid #C5D8A4; border-radius: 20px; padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background 0.2s;";
+            entry.onmouseover = () => entry.style.background = "#F0F4EA";
+            entry.onmouseout = () => entry.style.background = "#ffffff";
+            entry.onclick = () => window.open(data.link, '_blank');
+            
+            entry.innerHTML = `
+                <div style="flex: 1;">
+                    <div style="font-weight: 800; color: #1e293b; font-size: 15px; font-family: 'TMoneyDungunbaram', sans-serif;">${data.title}</div>
+                    ${deadlineText}
+                </div>
+                <div style="color: #7ca349;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+                </div>
+            `;
+            list.appendChild(entry);
+        });
+
+        document.getElementById('entryPopupModal').style.display = 'flex';
+    } catch (error) {
+        console.error("팝업 데이터 로딩 에러:", error);
+    }
+}
+
 window.showAdminMenu = function(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     let menu = document.getElementById('dynamicAdminMenu');
@@ -2447,18 +2518,19 @@ document.addEventListener('dragstart', function(e) {
 async function initApp() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     try {
-        // index.html에서 이미지를 띄우므로 여기서 중복으로 처리할 필요가 없습니다.
-        
         await seedAdmin();
         await loadData();
         initAuth(); 
         updateAdminUI(); 
 
         await window.showTab('schedule');
+        
+        // --- 새로 추가된 코드: 모든 데이터가 로드된 후 팝업 띄우기 ---
+        await showEntryPopupIfItemsExist();
+
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
     } finally {
-        // 콘텐츠를 먼저 보이게 하고 로딩 오버레이를 숨깁니다.
         document.body.classList.remove('is-loading');
         if (loadingOverlay) { 
             loadingOverlay.classList.add('hidden'); 
