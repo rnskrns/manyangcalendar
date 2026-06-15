@@ -2601,9 +2601,6 @@ async function initApp() {
 
         await window.showTab('schedule');
         
-        // --- 새로 추가된 코드: 모든 데이터가 로드된 후 팝업 띄우기 ---
-        await showEntryPopupIfItemsExist();
-
     } catch (error) {
         console.error('초기 로딩 중 오류 발생:', error);
     } finally {
