@@ -154,7 +154,7 @@
     </div>
 
     <script>
-        (function() {
+        (async function() {
             const gifs = [
                 "https://i.postimg.cc/13HBpsL3/Honeycam-2026-06-10-20-44-02.webp",
                 "https://i.postimg.cc/Bngpx4dv/Honeycam-2026-06-10-20-45-47.webp",
@@ -166,7 +166,36 @@
             imgTarget.onload = function() {
                 imgTarget.style.opacity = '1';
             };
-            imgTarget.src = pickedGif;
+
+            try {
+                // 1. 'loading-images'라는 이름의 캐시 저장소 열기
+                const cache = await caches.open('loading-images');
+                
+                // 2. 이전에 저장해둔 이미지가 있는지 확인
+                const cachedResponse = await cache.match(pickedGif);
+
+                if (cachedResponse) {
+                    // 3. 캐시에 이미지가 있다면 다운로드하지 않고 즉시 꺼내서 보여줌 (매우 빠름)
+                    const blob = await cachedResponse.blob();
+                    imgTarget.src = URL.createObjectURL(blob);
+                } else {
+                    // 4. 캐시에 없다면 네트워크에서 다운로드
+                    const response = await fetch(pickedGif);
+                    if (response.ok) {
+                        // 다음 로딩을 위해 캐시에 저장하고, 화면에 표시
+                        cache.put(pickedGif, response.clone());
+                        const blob = await response.blob();
+                        imgTarget.src = URL.createObjectURL(blob);
+                    } else {
+                        // 다운로드 실패 시 그냥 일반 URL 방식으로 로드
+                        imgTarget.src = pickedGif;
+                    }
+                }
+            } catch (error) {
+                // 브라우저에서 캐시 기능을 지원하지 않거나 에러가 나면 기본 방식으로 작동
+                console.warn("캐시 로드 실패, 기본 URL을 사용합니다:", error);
+                imgTarget.src = pickedGif;
+            }
         })();
     </script>
 
