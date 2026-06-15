@@ -1765,22 +1765,16 @@ window.checkAndShowPopup = async function() {
     const hideDate = localStorage.getItem('hideUpPopupDate');
     const today = new Date().toDateString();
     
-    console.log("2. 하루 안보기 상태 확인 -> 저장된 날짜:", hideDate, "오늘 날짜:", today);
     if (hideDate === today) {
-        console.log("👉 [중단] 오늘 하루 안 보기가 체크되어 있어서 팝업을 띄우지 않습니다.");
+        console.log("👉 [중단] 오늘 하루 안 보기가 체크되어 있습니다.");
         return;
     }
     
     const popupList = document.getElementById('popupUpList');
-    if (!popupList) {
-        console.log("👉 [에러] index.html에서 popupUpList 아이디를 찾을 수 없습니다.");
-        return;
-    }
+    if (!popupList) return;
 
     try {
         const snapshot = await getDocs(collection(db, 'up'));
-        console.log("3. DB에서 UP 데이터 가져오기 성공! 전체 개수:", snapshot.size);
-        
         let validItems = [];
         const todayLocal = new Date();
         const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
@@ -1791,10 +1785,8 @@ window.checkAndShowPopup = async function() {
             validItems.push({ id: docSnap.id, ...data });
         });
 
-        console.log("4. 마감일이 안 지난 유효한 UP 컨텐츠 개수:", validItems.length);
-
         if (validItems.length === 0) {
-            console.log("👉 [중단] 화면에 띄울 유효한 UP 컨텐츠가 없어서 팝업을 안 띄웁니다.");
+            console.log("👉 [중단] 유효한 UP 컨텐츠가 없습니다.");
             return;
         }
 
@@ -1824,8 +1816,10 @@ window.checkAndShowPopup = async function() {
 
         const modal = document.getElementById('upPopupModal');
         if (modal) {
-            modal.style.display = 'flex';
-            console.log("5. 🎉 정상적으로 팝업을 화면에 띄웠습니다!");
+            // 💡 CSS 오류를 완벽하게 무시하고 팝업을 화면 최상단 한가운데 강제로 고정시키는 치트키입니다!
+            modal.style.cssText = "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.6) !important; z-index: 999999 !important; justify-content: center !important; align-items: center !important;";
+            
+            console.log("5. 🎉 팝업 화면 한가운데 강제 출력 완료!");
         }
     } catch (error) { 
         console.error("Popup UP Load Error:", error); 
