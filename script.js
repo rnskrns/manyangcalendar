@@ -1749,6 +1749,7 @@ window.deleteUpItem = async function(id) {
     }
 };
 
+// 팝업 닫기 함수
 window.closeUpPopup = function() {
     const isChecked = document.getElementById('hidePopupToday')?.checked;
     if (isChecked) {
@@ -1756,13 +1757,11 @@ window.closeUpPopup = function() {
         localStorage.setItem('hideUpPopupDate', today);
     }
     const modal = document.getElementById('upPopupModal');
-    if (modal) modal.remove(); // 숨기는 게 아니라 화면에서 아예 깔끔하게 지워버립니다.
+    if (modal) modal.remove();
 };
 
-// 팝업 생성 및 띄우기 (강제 주입 방식)
+// 팝업 생성 및 띄우기 (이미지 및 자동 삭제 기능 포함)
 window.checkAndShowPopup = async function() {
-    console.log("1. 팝업 데이터 확인 중...");
-
     const hideDate = localStorage.getItem('hideUpPopupDate');
     const today = new Date().toDateString();
     if (hideDate === today) return;
@@ -1779,19 +1778,37 @@ window.checkAndShowPopup = async function() {
             validItems.push({ id: docSnap.id, ...data });
         });
 
-        if (validItems.length === 0) return;
+        // 💡 [핵심] 업링크가 0개면 관리자 접속 시 팝업 이미지 정보도 DB에서 자동 삭제!
+        if (validItems.length === 0) {
+            if (isAdmin) {
+                try { await deleteDoc(doc(db, 'settings', 'up_popup')); } catch(e) {}
+            }
+            return; 
+        }
 
         validItems.sort((a, b) => {
             if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
             return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
         });
 
-        // 💡 [핵심] 기존에 HTML에 숨어있던 고장 난 팝업이 있다면 아예 부숴버립니다!
+        // 💡 팝업 이미지 불러오기
+        let popupImageUrl = '';
+        try {
+            const imgSnap = await getDoc(doc(db, 'settings', 'up_popup'));
+            if (imgSnap.exists() && imgSnap.data().imageUrl) {
+                popupImageUrl = imgSnap.data().imageUrl;
+            }
+        } catch(e) {}
+
         const existingModal = document.getElementById('upPopupModal');
         if (existingModal) existingModal.remove();
 
-        // 💡 팝업 안에 들어갈 내용(리스트) 만들기
         let listHtml = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #7ca349;">헤드번팅 꿍! (UP)</div>`;
+
+        // 💡 저장된 이미지가 있다면 리스트 맨 위에 띄워줍니다!
+        if (popupImageUrl) {
+            listHtml += `<img src="${popupImageUrl}" style="width: 100%; border-radius: 20px; margin-bottom: 15px; max-height: 250px; object-fit: cover; border: 2px solid #C5D8A4;">`;
+        }
 
         validItems.forEach(data => {
             let deadlineText = '';
@@ -1809,11 +1826,10 @@ window.checkAndShowPopup = async function() {
             `;
         });
 
-        // 💡 CSS 충돌을 100% 무시하고 가장 최상단에 팝업을 찍어냅니다. (z-index: 9999999)
         const modalHtml = `
         <div id="upPopupModal" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:9999999; justify-content:center; align-items:center; backdrop-filter:blur(4px); visibility:visible !important; opacity:1 !important;">
-            <div style="background:#fff; width:90%; max-width:500px; padding:30px; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.2); display:flex; flex-direction:column; max-height: 80vh;">
-                <div style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom: 15px;">
+            <div style="background:#fff; width:90%; max-width:450px; padding:30px; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.2); display:flex; flex-direction:column; max-height: 80vh;">
+                <div style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom: 15px; display:flex; flex-direction:column;">
                     ${listHtml}
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px dashed #e2e8f0; flex-shrink:0;">
@@ -1826,7 +1842,6 @@ window.checkAndShowPopup = async function() {
         </div>`;
 
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        console.log("5. 🎉 HTML 강제 주입으로 팝업 출력 완벽 성공!");
 
     } catch (error) {
         console.error("Popup UP Load Error:", error);
@@ -1920,6 +1935,7 @@ async function showEntryPopupIfItemsExist() {
     }
 }
 
+// 기존 showAdminMenu 함수를 이걸로 통째로 교체해주세요!
 window.showAdminMenu = function(e) {
     if (e) { e.preventDefault(); e.stopPropagation(); }
     let menu = document.getElementById('dynamicAdminMenu');
@@ -1937,6 +1953,13 @@ window.showAdminMenu = function(e) {
         btnChangePw.onmouseover = () => btnChangePw.style.background = '#f1f5f9'; btnChangePw.onmouseout = () => btnChangePw.style.background = 'none';
         btnChangePw.onclick = () => { menu.style.display = 'none'; window.openPwChangeModal(); };
 
+        // 👇 새로 추가된 "팝업 관리" 메뉴 버튼
+        const btnManagePopup = document.createElement('button');
+        btnManagePopup.innerText = '팝업 관리';
+        btnManagePopup.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; font-size:14px; color:#7ca349; font-family: "TMoneyDungunbaram";';
+        btnManagePopup.onmouseover = () => btnManagePopup.style.background = '#F0F4EA'; btnManagePopup.onmouseout = () => btnManagePopup.style.background = 'none';
+        btnManagePopup.onclick = () => { menu.style.display = 'none'; window.openPopupManagerModal(); };
+
         const btnLogout = document.createElement('button');
         btnLogout.innerText = '로그아웃';
         btnLogout.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; color:#ef4444; font-size:14px; font-family: "TMoneyDungunbaram";';
@@ -1948,7 +1971,6 @@ window.showAdminMenu = function(e) {
             isAdmin = false;
             currentAdminProfile = null;
             
-            // 두 저장소 모두 삭제
             sessionStorage.removeItem('sompunch_admin_session'); 
             localStorage.removeItem('sompunch_admin_session');
             
@@ -1957,7 +1979,11 @@ window.showAdminMenu = function(e) {
             renderCalendar(); 
             showToast('로그아웃 되었습니다.');
         };
-        menu.appendChild(btnChangePw); menu.appendChild(btnLogout); document.body.appendChild(menu);
+        
+        menu.appendChild(btnChangePw); 
+        menu.appendChild(btnManagePopup); // 메뉴에 팝업 관리 추가
+        menu.appendChild(btnLogout); 
+        document.body.appendChild(menu);
     }
     
     menu.style.top = (rect.bottom + 8) + 'px';
@@ -1974,30 +2000,119 @@ window.showAdminMenu = function(e) {
     } else { menu.style.display = 'none'; }
 };
 
-function ensurePwChangeModal() {
-    const existing = document.getElementById('pwChangeModal');
-    if (existing && existing.dataset.injected === 'true') return;
-    if (existing) existing.remove();
+// ==========================================
+// 팝업 이미지 관리 기능 추가
+// ==========================================
+function ensurePopupManagerModal() {
+    const existing = document.getElementById('popupManagerModal');
+    if (existing) return;
 
     const html = `
-    <div id="pwChangeModal" data-injected="true" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10000; justify-content:center; align-items:center; backdrop-filter:blur(2px);">
-        <div style="background:#fff; padding:32px 40px; border-radius:30px; display:flex; flex-direction:column; gap:16px; min-width:320px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
-            <h2 style="margin:0; font-family:'TMoneyDungunbaram', sans-serif; color:#7A5A2F; font-size:24px; text-align:center;">암호 변경</h2>
+    <div id="popupManagerModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100000; justify-content:center; align-items:center; backdrop-filter:blur(2px);">
+        <div style="background:#fff; padding:32px 40px; border-radius:30px; display:flex; flex-direction:column; gap:16px; min-width:320px; max-width:450px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+            <h2 style="margin:0; font-family:'TMoneyDungunbaram', sans-serif; color:#7A5A2F; font-size:24px; text-align:center;">팝업 이미지 관리</h2>
             
-            <input type="password" id="currentPwInput" placeholder="현재 비밀번호" style="padding:12px; border:1px solid #ddd; border-radius:30px; font-weight:bold; outline:none; text-align:center;">
-            <input type="password" id="newPwInput" placeholder="새 비밀번호" style="padding:12px; border:1px solid #ddd; border-radius:30px; font-weight:bold; outline:none; text-align:center;">
-            <input type="password" id="confirmPwInput" placeholder="새 비밀번호 확인" style="padding:12px; border:1px solid #ddd; border-radius:30px; font-weight:bold; outline:none; text-align:center;" onkeydown="if(event.key==='Enter') changeAdminPassword()">
+            <div style="text-align:center; background:#f9f9f9; padding:15px; border-radius:20px; border:2px dashed #ddd;">
+                <img id="popupImgPreview" src="" style="display:none; width:100%; max-height:200px; object-fit:contain; border-radius:15px; margin-bottom:10px;">
+                <p id="popupImgPlaceholder" style="margin:0; color:#999; font-size:14px; font-weight:bold;">등록된 이미지가 없습니다</p>
+            </div>
             
-            <div id="pwChangeError" class="hidden" style="color:#ef4444; font-size:13px; text-align:center; font-weight:bold;"></div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-weight:bold; color:#7A5A2F; font-size:14px;">1. PC/모바일 이미지 파일 직접 업로드</label>
+                <label style="background:#f1f5f9; color:#475569; padding:10px 14px; border-radius:30px; cursor:pointer; font-weight:bold; font-size:14px; text-align:center; transition:0.2s;">
+                    📷 이미지 선택 후 업로드
+                    <input type="file" accept="image/*" style="display:none;" onchange="window.uploadPopupManagerImg(this)">
+                </label>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <label style="font-weight:bold; color:#7A5A2F; font-size:14px;">2. 또는 이미지 링크(URL) 입력</label>
+                <input type="text" id="popupImgLink" placeholder="https://..." style="padding:12px; border:1px solid #ddd; border-radius:30px; font-weight:bold; outline:none; font-size:13px;" oninput="document.getElementById('popupImgPreview').src=this.value; document.getElementById('popupImgPreview').style.display='block'; document.getElementById('popupImgPlaceholder').style.display='none';">
+            </div>
             
             <div style="display:flex; gap:10px; margin-top:10px;">
-                <button onclick="closeModal('pwChangeModal')" style="flex:1; padding:12px; border:none; border-radius:30px; cursor:pointer; background:#f1f5f9; color:#64748b; font-weight:bold; font-size:15px;">취소</button>
-                <button onclick="changeAdminPassword()" class="btn-save" style="flex:1; padding:12px; border:none; border-radius:30px; cursor:pointer; background:#7ca349; color:white; font-weight:bold; font-size:15px;">변경</button>
+                <button onclick="window.deletePopupImage()" style="flex:1; padding:12px; border:none; border-radius:30px; cursor:pointer; background:#fee2e2; color:#ef4444; font-weight:bold; font-size:15px;">이미지 삭제</button>
+                <button onclick="window.savePopupImage()" id="popupSaveBtn" style="flex:1; padding:12px; border:none; border-radius:30px; cursor:pointer; background:#7ca349; color:white; font-weight:bold; font-size:15px;">저장하기</button>
             </div>
+            <button onclick="document.getElementById('popupManagerModal').style.display='none'" style="padding:12px; border:none; border-radius:30px; cursor:pointer; background:#f1f5f9; color:#64748b; font-weight:bold; font-size:15px;">닫기</button>
         </div>
     </div>`;
     document.body.insertAdjacentHTML('beforeend', html);
 }
+
+window.openPopupManagerModal = async function() {
+    if (!isAdmin) return;
+    ensurePopupManagerModal();
+    const preview = document.getElementById('popupImgPreview');
+    const placeholder = document.getElementById('popupImgPlaceholder');
+    const linkInput = document.getElementById('popupImgLink');
+    
+    preview.style.display = 'none';
+    placeholder.style.display = 'block';
+    linkInput.value = '';
+    
+    try {
+        const snap = await getDoc(doc(db, 'settings', 'up_popup'));
+        if (snap.exists() && snap.data().imageUrl) {
+            preview.src = snap.data().imageUrl;
+            linkInput.value = snap.data().imageUrl;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        }
+    } catch (e) { console.error(e); }
+    
+    document.getElementById('popupManagerModal').style.display = 'flex';
+};
+
+window.uploadPopupManagerImg = async function(input) {
+    if (input.files && input.files[0]) {
+        try {
+            showToast('이미지 업로드 중...');
+            const formData = new FormData();
+            formData.append("file", input.files[0]);
+            formData.append("upload_preset", "IMG_1234");
+            const res = await fetch(`https://api.cloudinary.com/v1_1/dtlqzklk5/image/upload`, { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.secure_url) {
+                const linkInput = document.getElementById('popupImgLink');
+                const preview = document.getElementById('popupImgPreview');
+                linkInput.value = data.secure_url;
+                preview.src = data.secure_url;
+                preview.style.display = 'block';
+                document.getElementById('popupImgPlaceholder').style.display = 'none';
+                showToast('이미지 첨부 완료! 하단의 저장하기를 눌러주세요.');
+            }
+        } catch(e) { showToast('업로드 실패'); }
+    }
+};
+
+window.savePopupImage = async function() {
+    if (!isAdmin) return;
+    const link = document.getElementById('popupImgLink').value.trim();
+    const btn = document.getElementById('popupSaveBtn');
+    btn.innerText = '저장 중...';
+    try {
+        if (link) {
+            await setDoc(doc(db, 'settings', 'up_popup'), { imageUrl: link, updatedAt: new Date() });
+        } else {
+            await deleteDoc(doc(db, 'settings', 'up_popup'));
+        }
+        showToast('팝업 이미지가 적용되었습니다.');
+        document.getElementById('popupManagerModal').style.display = 'none';
+    } catch(e) { showToast('저장 실패'); } finally { btn.innerText = '저장하기'; }
+};
+
+window.deletePopupImage = async function() {
+    if (!isAdmin) return;
+    if (!confirm('설정된 팝업 이미지를 지우시겠습니까?')) return;
+    try {
+        await deleteDoc(doc(db, 'settings', 'up_popup'));
+        document.getElementById('popupImgLink').value = '';
+        document.getElementById('popupImgPreview').style.display = 'none';
+        document.getElementById('popupImgPlaceholder').style.display = 'block';
+        showToast('삭제되었습니다. 이제 팝업에 이미지가 뜨지 않습니다.');
+    } catch(e) { showToast('삭제 실패'); }
+};
 
 window.openPwChangeModal = function() {
     ensurePwChangeModal();
