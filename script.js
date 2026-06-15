@@ -1756,22 +1756,16 @@ window.closeUpPopup = function() {
         localStorage.setItem('hideUpPopupDate', today);
     }
     const modal = document.getElementById('upPopupModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.remove(); // 숨기는 게 아니라 화면에서 아예 깔끔하게 지워버립니다.
 };
 
+// 팝업 생성 및 띄우기 (강제 주입 방식)
 window.checkAndShowPopup = async function() {
-    console.log("1. 팝업 함수 실행 시작!");
+    console.log("1. 팝업 데이터 확인 중...");
 
     const hideDate = localStorage.getItem('hideUpPopupDate');
     const today = new Date().toDateString();
-    
-    if (hideDate === today) {
-        console.log("👉 [중단] 오늘 하루 안 보기가 체크되어 있습니다.");
-        return;
-    }
-    
-    const popupList = document.getElementById('popupUpList');
-    if (!popupList) return;
+    if (hideDate === today) return;
 
     try {
         const snapshot = await getDocs(collection(db, 'up'));
@@ -1785,17 +1779,19 @@ window.checkAndShowPopup = async function() {
             validItems.push({ id: docSnap.id, ...data });
         });
 
-        if (validItems.length === 0) {
-            console.log("👉 [중단] 유효한 UP 컨텐츠가 없습니다.");
-            return;
-        }
+        if (validItems.length === 0) return;
 
         validItems.sort((a, b) => {
             if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
             return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
         });
-        
-        popupList.innerHTML = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #7A5A2F;">진행중인 UP!</div>`;
+
+        // 💡 [핵심] 기존에 HTML에 숨어있던 고장 난 팝업이 있다면 아예 부숴버립니다!
+        const existingModal = document.getElementById('upPopupModal');
+        if (existingModal) existingModal.remove();
+
+        // 💡 팝업 안에 들어갈 내용(리스트) 만들기
+        let listHtml = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #7ca349;">헤드번팅 꿍! (UP)</div>`;
 
         validItems.forEach(data => {
             let deadlineText = '';
@@ -1803,26 +1799,37 @@ window.checkAndShowPopup = async function() {
                 const parts = data.deadline.split('-');
                 if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 12px; font-weight: 600; margin-top: 4px;">${parts[1]}.${parts[2]} 마감</div>`;
             }
-            
-            popupList.innerHTML += `
-                <div style="background: #ffffff; border: 2px solid #C5D8A4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#F0F4EA'" onmouseout="this.style.background='#ffffff'">
+            listHtml += `
+                <div style="background: #ffffff; border: 2px solid #C5D8A4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 20px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#F0F4EA'" onmouseout="this.style.background='#ffffff'">
                     <div style="flex: 1;">
-                        <div style="font-weight: 800; color: #1e293b; font-size: 15px;">${data.title}</div>
+                        <div style="font-weight: 800; color: #41522A; font-size: 15px;">${data.title}</div>
                         ${deadlineText}
                     </div>
                 </div>
             `;
         });
 
-        const modal = document.getElementById('upPopupModal');
-        if (modal) {
-            // 💡 CSS 오류를 완벽하게 무시하고 팝업을 화면 최상단 한가운데 강제로 고정시키는 치트키입니다!
-            modal.style.cssText = "display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0,0,0,0.6) !important; z-index: 999999 !important; justify-content: center !important; align-items: center !important;";
-            
-            console.log("5. 🎉 팝업 화면 한가운데 강제 출력 완료!");
-        }
-    } catch (error) { 
-        console.error("Popup UP Load Error:", error); 
+        // 💡 CSS 충돌을 100% 무시하고 가장 최상단에 팝업을 찍어냅니다. (z-index: 9999999)
+        const modalHtml = `
+        <div id="upPopupModal" style="display:flex; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); z-index:9999999; justify-content:center; align-items:center; backdrop-filter:blur(4px); visibility:visible !important; opacity:1 !important;">
+            <div style="background:#fff; width:90%; max-width:500px; padding:30px; border-radius:30px; box-shadow:0 10px 25px rgba(0,0,0,0.2); display:flex; flex-direction:column; max-height: 80vh;">
+                <div style="overflow-y:auto; flex:1; padding-right:5px; margin-bottom: 15px;">
+                    ${listHtml}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px dashed #e2e8f0; flex-shrink:0;">
+                    <label style="font-size: 14px; color: #64748b; font-weight: 800; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="checkbox" id="hidePopupToday" style="accent-color: #7ca349; width: 16px; height: 16px; cursor: pointer;">오늘 하루 안 보기
+                    </label>
+                    <button style="padding: 10px 24px; font-size: 15px; background: #7ca349; color: white; border: none; border-radius: 30px; font-weight: 800; cursor: pointer;" onclick="closeUpPopup()">닫기</button>
+                </div>
+            </div>
+        </div>`;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        console.log("5. 🎉 HTML 강제 주입으로 팝업 출력 완벽 성공!");
+
+    } catch (error) {
+        console.error("Popup UP Load Error:", error);
     }
 };
 
