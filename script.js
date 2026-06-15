@@ -1803,7 +1803,7 @@ window.checkAndShowPopup = async function() {
         const existingModal = document.getElementById('upPopupModal');
         if (existingModal) existingModal.remove();
 
-        let listHtml = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #7ca349;">헤드번팅 꿍! (UP)</div>`;
+        let listHtml = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #7ca349;">헤드번팅 꿍!</div>`;
 
         // 💡 저장된 이미지가 있다면 리스트 맨 위에 띄워줍니다!
         if (popupImageUrl) {
