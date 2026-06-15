@@ -1760,15 +1760,26 @@ window.closeUpPopup = function() {
 };
 
 window.checkAndShowPopup = async function() {
+    console.log("1. 팝업 함수 실행 시작!");
+
     const hideDate = localStorage.getItem('hideUpPopupDate');
     const today = new Date().toDateString();
-    if (hideDate === today) return;
+    
+    console.log("2. 하루 안보기 상태 확인 -> 저장된 날짜:", hideDate, "오늘 날짜:", today);
+    if (hideDate === today) {
+        console.log("👉 [중단] 오늘 하루 안 보기가 체크되어 있어서 팝업을 띄우지 않습니다.");
+        return;
+    }
     
     const popupList = document.getElementById('popupUpList');
-    if (!popupList) return;
+    if (!popupList) {
+        console.log("👉 [에러] index.html에서 popupUpList 아이디를 찾을 수 없습니다.");
+        return;
+    }
 
     try {
         const snapshot = await getDocs(collection(db, 'up'));
+        console.log("3. DB에서 UP 데이터 가져오기 성공! 전체 개수:", snapshot.size);
         
         let validItems = [];
         const todayLocal = new Date();
@@ -1780,14 +1791,19 @@ window.checkAndShowPopup = async function() {
             validItems.push({ id: docSnap.id, ...data });
         });
 
-        if (validItems.length === 0) return;
+        console.log("4. 마감일이 안 지난 유효한 UP 컨텐츠 개수:", validItems.length);
+
+        if (validItems.length === 0) {
+            console.log("👉 [중단] 화면에 띄울 유효한 UP 컨텐츠가 없어서 팝업을 안 띄웁니다.");
+            return;
+        }
 
         validItems.sort((a, b) => {
             if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
             return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
         });
         
-        popupList.innerHTML = `<div style="font-family: 'Cafe24SurroundAir', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #7A5A2F;">진행중인 UP!</div>`;
+        popupList.innerHTML = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #7A5A2F;">진행중인 UP!</div>`;
 
         validItems.forEach(data => {
             let deadlineText = '';
@@ -1797,7 +1813,7 @@ window.checkAndShowPopup = async function() {
             }
             
             popupList.innerHTML += `
-                <div style="background: #ffffff; border: 2px solid #bae6fd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#e0f2fe'" onmouseout="this.style.background='#ffffff'">
+                <div style="background: #ffffff; border: 2px solid #C5D8A4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#F0F4EA'" onmouseout="this.style.background='#ffffff'">
                     <div style="flex: 1;">
                         <div style="font-weight: 800; color: #1e293b; font-size: 15px;">${data.title}</div>
                         ${deadlineText}
@@ -1806,8 +1822,14 @@ window.checkAndShowPopup = async function() {
             `;
         });
 
-        document.getElementById('upPopupModal').style.display = 'flex';
-    } catch (error) { console.error("Popup UP Load Error:", error); }
+        const modal = document.getElementById('upPopupModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            console.log("5. 🎉 정상적으로 팝업을 화면에 띄웠습니다!");
+        }
+    } catch (error) { 
+        console.error("Popup UP Load Error:", error); 
+    }
 };
 
 // 업링크 데이터 로드 및 팝업 표시
