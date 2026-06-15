@@ -1749,14 +1749,65 @@ window.deleteUpItem = async function(id) {
     }
 };
 
-window.closeEntryPopup = function() {
-    const hideToday = document.getElementById('hideEntryPopupToday').checked;
-    if (hideToday) {
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-        localStorage.setItem('hideUpPopupDate', dateStr);
+window.closeUpPopup = function() {
+    const isChecked = document.getElementById('hidePopupToday')?.checked;
+    if (isChecked) {
+        const today = new Date().toDateString();
+        localStorage.setItem('hideUpPopupDate', today);
     }
-    document.getElementById('entryPopupModal').style.display = 'none';
+    const modal = document.getElementById('upPopupModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.checkAndShowPopup = async function() {
+    const hideDate = localStorage.getItem('hideUpPopupDate');
+    const today = new Date().toDateString();
+    if (hideDate === today) return;
+    
+    const popupList = document.getElementById('popupUpList');
+    if (!popupList) return;
+
+    try {
+        const snapshot = await getDocs(collection(db, 'up'));
+        
+        let validItems = [];
+        const todayLocal = new Date();
+        const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
+
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.deadline && data.deadline < todayStr) return;
+            validItems.push({ id: docSnap.id, ...data });
+        });
+
+        if (validItems.length === 0) return;
+
+        validItems.sort((a, b) => {
+            if (a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
+            return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
+        });
+        
+        popupList.innerHTML = `<div style="font-family: 'Cafe24SurroundAir', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #7A5A2F;">진행중인 UP!</div>`;
+
+        validItems.forEach(data => {
+            let deadlineText = '';
+            if (data.deadline) {
+                const parts = data.deadline.split('-');
+                if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 12px; font-weight: 600; margin-top: 4px;">${parts[1]}.${parts[2]} 마감</div>`;
+            }
+            
+            popupList.innerHTML += `
+                <div style="background: #ffffff; border: 2px solid #bae6fd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.open('${data.link}', '_blank')" onmouseover="this.style.background='#e0f2fe'" onmouseout="this.style.background='#ffffff'">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 800; color: #1e293b; font-size: 15px;">${data.title}</div>
+                        ${deadlineText}
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('upPopupModal').style.display = 'flex';
+    } catch (error) { console.error("Popup UP Load Error:", error); }
 };
 
 // 업링크 데이터 로드 및 팝업 표시
@@ -2540,7 +2591,6 @@ document.addEventListener('dragstart', function(e) {
     if (!isAdmin && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
 });
 
-// 2. window.onload 대신 모듈 환경에 맞춰 더 안전하게 초기화 실행
 async function initApp() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     try {
@@ -2584,8 +2634,24 @@ async function initApp() {
 }
 
 // Use window.onload to ensure all resources are loaded before hiding the loading screen
-window.onload = initApp;
+window.onload = async () => {
+    try {
+        // 기존 질문자님 코드들 (initAuth, loadData 등등)
+        // ...
+        
+    } catch (error) {
+        console.error('초기 로딩 중 오류 발생:', error);
+    }
 
+    // ⭐️ 추가할 부분: 여기서 팝업 호출!
+    window.checkAndShowPopup();
+
+    // 기존의 로딩 화면 지우는 코드 유지
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) { loadingOverlay.classList.add('hidden'); }
+    }, 1000);
+};
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);

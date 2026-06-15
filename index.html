@@ -426,23 +426,14 @@
         </div>
     </div>
 
-    <script type="module" src="script.js?v=20260615"></script>
-
-    <!-- UP(업링크) 입장 팝업 모달 -->
-    <div id="entryPopupModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:10001; justify-content:center; align-items:center; backdrop-filter:blur(2px);">
-        <div style="background:#fff; padding:32px 40px; border-radius:30px; display:flex; flex-direction:column; gap:16px; width:90%; max-width:450px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
-            <h2 style="margin:0; font-family:'TMoneyDungunbaram', sans-serif; color:#7ca349; font-size:24px; text-align:center;">UP! 진행중인 컨텐츠</h2>
-            
-            <!-- 항목 리스트가 들어갈 영역 -->
-            <div id="entryPopupList" style="max-height: 40vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-            </div>
-            
-            <!-- 하단 닫기 및 오늘 하루 보지 않기 버튼 -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top: 1px dashed #eee; padding-top: 15px;">
-                <label style="font-size: 14px; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: bold;">
-                    <input type="checkbox" id="hideEntryPopupToday" style="width: 16px; height: 16px;"> 오늘 하루 보지 않기
+        <div id="upPopupModal" class="modal">
+        <div class="modal-content" style="max-width: 550px; min-height: 300px; padding: 30px; overflow-y: auto;">
+            <div id="popupUpList" style="margin-bottom: 20px;"></div>
+            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-top: auto;">
+                <label style="font-size: 13px; color: #7a7a7a; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="hidePopupToday" style="accent-color: #EAB308; width: 16px; height: 16px;">오늘 하루 안 보기
                 </label>
-                <button onclick="closeEntryPopup()" style="padding:10px 24px; border:none; border-radius:30px; cursor:pointer; background:#f1f5f9; color:#64748b; font-weight:bold; font-size:14px;">닫기</button>
+                <button class="btn btn-save" style="padding: 10px 20px; font-size: 14px; flex: none;" onclick="closeUpPopup()">닫기</button>
             </div>
         </div>
     </div>
