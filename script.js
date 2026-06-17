@@ -1651,6 +1651,13 @@ window.deleteMemo = async (id) => {
 
 window.openUpInput = function() {
     if (!isAdmin) return;
+    
+    // 추가 모드로 초기화
+    editingUpId = null;
+    editingUpSource = null;
+    const saveBtn = document.querySelector('#upInputArea .btn-save');
+    if (saveBtn) saveBtn.innerText = '추가하기';
+
     document.getElementById('upInputArea').classList.remove('hidden');
     document.getElementById('upTitleInput').focus();
 };
@@ -1659,6 +1666,12 @@ window.closeUpInput = function() {
     const titleInput = document.getElementById('upTitleInput'); if (titleInput) titleInput.value = '';
     document.getElementById('upLinkInput').value = ''; document.getElementById('upDeadlineInput').value = '';
     document.getElementById('upInputArea').classList.add('hidden');
+    
+    // 추가 모드로 초기화
+    editingUpId = null;
+    editingUpSource = null;
+    const saveBtn = document.querySelector('#upInputArea .btn-save');
+    if (saveBtn) saveBtn.innerText = '추가하기';
 };
 
 window.saveUpItem = async function() {
@@ -1671,26 +1684,72 @@ window.saveUpItem = async function() {
     if (!link) return showToast('링크를 입력하세요.');
 
     try {
-        await addDoc(collection(db, 'up'), { title, link, deadline, createdAt: new Date() });
-        document.getElementById('upTitleInput').value = ''; document.getElementById('upLinkInput').value = ''; document.getElementById('upDeadlineInput').value = '';
+        if (editingUpId && editingUpSource) {
+            // 📝 기존 항목 수정
+            await updateDoc(doc(db, editingUpSource, editingUpId), { 
+                title, 
+                link, 
+                deadline, 
+                updatedAt: new Date() 
+            });
+            showToast('UP 항목이 수정되었습니다.');
+        } else {
+            // ✨ 새 항목 추가 (기본적으로 up 컬렉션에 추가)
+            await addDoc(collection(db, 'up'), { 
+                title, 
+                link, 
+                deadline, 
+                createdAt: new Date() 
+            });
+            showToast('UP 항목이 추가되었습니다.');
+        }
         
         closeUpInput();
-        loadUpItems(); showToast('UP 항목이 추가되었습니다.');
-    } catch (error) { showToast('저장 실패: ' + error.message); }
+        loadUpItems(); 
+    } catch (error) { 
+        showToast('저장 실패: ' + error.message); 
+    }
+};
+
+let editingUpId = null;
+let editingUpSource = null;
+
+// 우클릭 시 수정 창을 여는 함수
+window.editUpItem = function(data) {
+    if (!isAdmin) return;
+    
+    editingUpId = data.id;
+    editingUpSource = data.source || 'up';
+
+    document.getElementById('upTitleInput').value = data.title || '';
+    document.getElementById('upLinkInput').value = data.link || '';
+    document.getElementById('upDeadlineInput').value = data.deadline || '';
+
+    // 버튼 텍스트를 '수정하기'로 변경
+    const saveBtn = document.querySelector('#upInputArea .btn-save');
+    if (saveBtn) saveBtn.innerText = '수정하기';
+
+    document.getElementById('upInputArea').classList.remove('hidden');
+    document.getElementById('upTitleInput').focus();
 };
 
 window.loadUpItems = async function() {
     const list = document.getElementById('upList'); if(!list) return;
     try {
-        const snapshot = await getDocs(collection(db, 'up'));
+        const [uplinkSnapshot, upSnapshot] = await Promise.all([
+            getDocs(collection(db, 'uplink')),
+            getDocs(collection(db, 'up'))
+        ]);
+
         list.innerHTML = '';
-        if (snapshot.empty) {
+        if (uplinkSnapshot.empty && upSnapshot.empty) {
             list.innerHTML = '<p style="text-align:center; color:#A09586; padding: 20px;">등록된 UP! 컨텐츠가 없습니다.</p>';
             return;
         }
 
         let items = [];
-        snapshot.forEach(docSnap => { items.push({ id: docSnap.id, ...docSnap.data() }); });
+        uplinkSnapshot.forEach(docSnap => { items.push({ id: docSnap.id, source: 'uplink', ...docSnap.data() }); });
+        upSnapshot.forEach(docSnap => { items.push({ id: docSnap.id, source: 'up', ...docSnap.data() }); });
         
         items.sort((a, b) => {
             if(a.deadline && b.deadline) return a.deadline.localeCompare(b.deadline);
@@ -1705,9 +1764,8 @@ window.loadUpItems = async function() {
 
         items.forEach(data => {
             if (data.deadline && data.deadline < todayStr) {
-                // 관리자일 경우 마감 날짜가 지난 데이터를 DB에서 아예 삭제해버립니다.
                 if (isAdmin) {
-                    deleteDoc(doc(db, 'up', data.id)).catch(e => console.log('만료된 UP 항목 자동 삭제 실패:', e));
+                    deleteDoc(doc(db, data.source, data.id)).catch(e => console.log('만료된 UP 항목 자동 삭제 실패:', e));
                 }
                 return;
             }
@@ -1716,11 +1774,20 @@ window.loadUpItems = async function() {
             const entry = document.createElement('div');
             entry.style.cssText = "background: #ffffff; border: 2px solid #C5D8A4; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 30px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; cursor: pointer;";
             entry.onmouseover = () => entry.style.background = "#F0F4EA"; entry.onmouseout = () => entry.style.background = "#ffffff";
+            
+            // ⭐ 관리자일 경우 우클릭 시 수정 창 열기 이벤트 추가
+            if (isAdmin) {
+                entry.oncontextmenu = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.editUpItem(data);
+                };
+            }
 
             let deadlineText = '';
             if (data.deadline) {
                 const parts = data.deadline.split('-');
-            if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 11px; font-weight: 600; margin-top: 4px; font-family: 'TMoneyDungunbaram', sans-serif;">${parts[1]}.${parts[2]} 마감</div>`;
+                if (parts.length === 3) deadlineText = `<div style="color: #64748b; font-size: 11px; font-weight: 600; margin-top: 4px; font-family: 'TMoneyDungunbaram', sans-serif;">${parts[1]}.${parts[2]} 마감</div>`;
             }
             entry.innerHTML = `
                 <div style="flex: 1;" onclick="window.open('${data.link}', '_blank')">
@@ -1731,7 +1798,7 @@ window.loadUpItems = async function() {
                     <a href="${data.link}" target="_blank" style="color: #7ca349; display: flex; align-items: center;" onclick="event.stopPropagation()">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
                     </a>
-                    ${isAdmin ? `<button onclick="event.stopPropagation(); deleteUpItem('${data.id}')" style="color: #aaa; font-weight: bold; cursor: pointer; border: none; background: none;">✕</button>` : ''}
+                    ${isAdmin ? `<button onclick="event.stopPropagation(); deleteUpItem('${data.id}', '${data.source}')" style="color: #aaa; font-weight: bold; cursor: pointer; border: none; background: none;">✕</button>` : ''}
                 </div>
             `;
             list.appendChild(entry);
@@ -1741,11 +1808,18 @@ window.loadUpItems = async function() {
     } catch (error) { console.error("데이터 로드 중 에러 발생:", error); }
 };
 
-window.deleteUpItem = async function(id) {
+window.deleteUpItem = async function(id, source = 'up') {
     if (!isAdmin) return;
     if(confirm('이 항목을 삭제하시겠습니까?')) {
-        try { await deleteDoc(doc(db, "up", id)); showToast('항목이 삭제되었습니다.'); await loadUpItems(); }
-        catch (error) { console.error('삭제 실패:', error); showToast('삭제에 실패했습니다.'); }
+        try { 
+            await deleteDoc(doc(db, source, id)); 
+            showToast('항목이 삭제되었습니다.'); 
+            await loadUpItems(); 
+        }
+        catch (error) { 
+            console.error('삭제 실패:', error); 
+            showToast('삭제에 실패했습니다.'); 
+        }
     }
 };
 
@@ -1767,18 +1841,27 @@ window.checkAndShowPopup = async function() {
     if (hideDate === today) return;
 
     try {
-        const snapshot = await getDocs(collection(db, 'up'));
+        const [uplinkSnapshot, upSnapshot] = await Promise.all([
+            getDocs(collection(db, 'uplink')),
+            getDocs(collection(db, 'up'))
+        ]);
+        
         let validItems = [];
         const todayLocal = new Date();
         const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
 
-        snapshot.forEach(docSnap => {
+        uplinkSnapshot.forEach(docSnap => {
             const data = docSnap.data();
             if (data.deadline && data.deadline < todayStr) return;
-            validItems.push({ id: docSnap.id, ...data });
+            validItems.push({ id: docSnap.id, source: 'uplink', ...data });
+        });
+        
+        upSnapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            if (data.deadline && data.deadline < todayStr) return;
+            validItems.push({ id: docSnap.id, source: 'up', ...data });
         });
 
-        // 💡 [핵심] 업링크가 0개면 관리자 접속 시 팝업 이미지 정보도 DB에서 자동 삭제!
         if (validItems.length === 0) {
             if (isAdmin) {
                 try { await deleteDoc(doc(db, 'settings', 'up_popup')); } catch(e) {}
@@ -1791,7 +1874,6 @@ window.checkAndShowPopup = async function() {
             return (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0);
         });
 
-        // 💡 팝업 이미지 불러오기
         let popupImageUrl = '';
         try {
             const imgSnap = await getDoc(doc(db, 'settings', 'up_popup'));
@@ -1805,7 +1887,6 @@ window.checkAndShowPopup = async function() {
 
         let listHtml = `<div style="font-family: 'TMoneyDungunbaram', sans-serif; font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 20px; color: #7ca349;">헤드번팅 꿍!</div>`;
 
-        // 💡 저장된 이미지가 있다면 리스트 맨 위에 띄워줍니다!
         if (popupImageUrl) {
             listHtml += `<img src="${popupImageUrl}" style="width: 100%; border-radius: 20px; margin-bottom: 15px; max-height: 250px; object-fit: cover; border: 2px solid #C5D8A4;">`;
         }
@@ -1855,23 +1936,21 @@ async function showEntryPopupIfItemsExist() {
     const today = new Date();
     const dateStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
     
-    // 💡 테스트를 위해 아래 한 줄을 임시로 주석(//) 처리했습니다. 무조건 뜨게 만듭니다!
-    // if (localStorage.getItem('hideUpPopupDate') === dateStr) {
-    //     console.log("2. 오늘 하루 보지 않기 설정됨 -> 팝업 안 띄움");
-    //     return;
-    // }
-
     try {
-        const snapshot = await getDocs(collection(db, 'up'));
-        if (snapshot.empty) {
+        const [uplinkSnapshot, upSnapshot] = await Promise.all([
+            getDocs(collection(db, 'uplink')),
+            getDocs(collection(db, 'up'))
+        ]);
+        
+        if (uplinkSnapshot.empty && upSnapshot.empty) {
             console.log("3. DB에 등록된 UP 항목이 아예 없습니다.");
             return;
         }
 
         let items = [];
-        snapshot.forEach(docSnap => { items.push({ id: docSnap.id, ...docSnap.data() }); });
+        uplinkSnapshot.forEach(docSnap => { items.push({ id: docSnap.id, source: 'uplink', ...docSnap.data() }); });
+        upSnapshot.forEach(docSnap => { items.push({ id: docSnap.id, source: 'up', ...docSnap.data() }); });
         
-        // 마감 날짜가 지난 항목 제외
         const todayLocal = new Date();
         todayLocal.setHours(0, 0, 0, 0);
         const todayFormatted = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, '0')}-${String(todayLocal.getDate()).padStart(2, '0')}`;
