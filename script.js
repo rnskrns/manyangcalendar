@@ -2026,6 +2026,11 @@ window.showAdminMenu = function(e) {
         menu.id = 'dynamicAdminMenu';
         menu.style.cssText = 'position:fixed; background:white; border:2px solid #e2e8f0; border-radius:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1); z-index:9999; display:flex; flex-direction:column; padding:8px; gap:4px; min-width:140px;';
         
+        const btnMember = document.createElement('button');
+        btnMember.innerText = '멤버 관리';
+        btnMember.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; font-size:14px; color:#ffc595; font-family: "TMoneyDungunbaram";';
+        btnMember.onclick = () => { menu.style.display = 'none'; window.openMemberManager(); };
+
         const btnChangePw = document.createElement('button');
         btnChangePw.innerText = '암호 변경';
         btnChangePw.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; font-size:14px; font-family: "TMoneyDungunbaram";';
@@ -2059,6 +2064,7 @@ window.showAdminMenu = function(e) {
             showToast('로그아웃 되었습니다.');
         };
         
+        menu.appendChild(btnMember);
         menu.appendChild(btnChangePw); 
         menu.appendChild(btnManagePopup); // 메뉴에 팝업 관리 추가
         menu.appendChild(btnLogout); 
