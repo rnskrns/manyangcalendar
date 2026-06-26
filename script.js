@@ -2025,7 +2025,7 @@ window.showAdminMenu = function(e) {
         
         const btnMember = document.createElement('button');
         btnMember.innerText = '멤버 관리';
-        btnMember.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; font-size:14px; color:#ffc595; font-family: "TMoneyDungunbaram";';
+        btnMember.style.cssText = 'padding:10px 16px; border:none; background:none; text-align:left; cursor:pointer; font-weight:bold; border-radius:30px; font-size:14px; font-family: "TMoneyDungunbaram";';
         btnMember.onclick = () => { menu.style.display = 'none'; window.openMemberManager(); };
 
         const btnChangePw = document.createElement('button');
